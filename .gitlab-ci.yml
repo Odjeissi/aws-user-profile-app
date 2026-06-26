@@ -1,0 +1,117 @@
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+
+default:
+  image: python:3.11-alpine
+
+stages:
+  - prepare
+  - test
+  - build
+  - deploy
+
+prepare_job:
+  stage: prepare
+  rules:
+    - if: "$CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH"
+  before_script:
+    - python -m venv venv
+    - source venv/bin/activate
+  script:
+    - pip install -r requirements.txt
+  artifacts:
+    paths:
+      - venv/
+
+test_job:
+  stage: test
+  rules:
+    - if: "$CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH"
+  before_script:
+    - python -m venv venv
+    - source venv/bin/activate
+  dependencies:
+    - prepare_job
+  script:
+    - pytest -v
+
+lint_job:
+  stage: test
+  dependencies:
+    - prepare_job
+  rules:
+    - if: "$CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH"
+  before_script:
+    - python -m venv venv
+    - source venv/bin/activate
+  script:
+    - pylint app.py
+
+build:
+  stage: build
+  image: docker:27
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  services:
+    - docker:27-dind
+  before_script:
+    - docker version
+  script:
+    - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin docker.io
+    - docker build -t "${DOCKER_USERNAME}/web_server:latest" -f docker/Dockerfile .
+    - docker image ls
+    - docker push "${DOCKER_USERNAME}/web_server:latest"
+
+deploy_job:
+  stage: deploy
+  image: alpine:latest
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  parallel:
+    matrix:
+      - EC2_HOSTS:
+          - "$ec2_1"
+          - "$ec2_2"
+
+  before_script:
+    # check if the ssh port is open
+    - nc -zv "$EC2_HOSTS" 22
+
+    # Install openssh-client and bash if not already present
+    - apk update && apk add --no-cache openssh-client bash
+
+    # Run the SSH agent
+    - eval $(ssh-agent -s)
+
+    # Inject the private key stored in GitLab CI/CD variables
+    - cat "$EC2_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+
+    # Create the SSH directory and configure permissions
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+
+    # Scan and append the remote host's keys
+    # to avoid interactive prompts
+    - ssh-keyscan -H "$EC2_HOSTS" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+
+  script:
+    - |
+      ssh "$EC2_USER@$EC2_HOSTS" "
+        echo '${DOCKER_PASSWORD}' | docker login -u '${DOCKER_USERNAME}' --password-stdin docker.io &&
+        docker pull '${DOCKER_USERNAME}/web_server:latest' &&
+        docker rm -f my_app || true &&
+        docker run -d \
+          --name my_app \
+          -p 80:5000 \
+          -e DB_HOST='$MY_DB_HOST' \
+          -e DB_USER='$MY_DB_USER' \
+          -e DB_PASSWORD='$MY_DB_PASSWORD' \
+          -e DB_NAME='$MY_DB_NAME' \
+          -e DB_PORT='$MY_DB_PORT' \
+          -e S3_BUCKET='$MY_S3_BUCKET' \
+          -e S3_REGION='$MY_S3_REGION' \
+          '${DOCKER_USERNAME}/web_server:latest'
+      "

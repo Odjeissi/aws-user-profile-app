@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Admin - AWS User Profile App</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container admin-container">
+      <h1>Admin Dashboard</h1>
+      <p>
+        Submitted user profiles from RDS MySQL and profile pictures from private
+        S3.
+      </p>
+
+      <a href="/">Back to Form</a>
+
+      <table>
+        <tr>
+          <th>ID</th>
+          <th>Picture</th>
+          <th>Name</th>
+          <th>Age</th>
+          <th>City</th>
+          <th>Country</th>
+          <th>S3 Object Key</th>
+          <th>Created</th>
+        </tr>
+
+        {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+
+          <td>
+            {% if user.profile_picture_url %}
+            <img src="{{ user.profile_picture_url }}" class="profile-img" />
+            {% else %} No image {% endif %}
+          </td>
+
+          <td>{{ user.first_name }} {{ user.last_name }}</td>
+          <td>{{ user.age }}</td>
+          <td>{{ user.city }}</td>
+          <td>{{ user.country }}</td>
+          <td>{{ user.profile_picture_key }}</td>
+          <td>{{ user.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </body>
+</html>

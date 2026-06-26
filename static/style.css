@@ -1,0 +1,112 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  width: 450px;
+  margin: 60px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.admin-container {
+  width: 1100px;
+}
+
+h1 {
+  text-align: center;
+}
+
+p {
+  color: #333;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+input {
+  padding: 10px;
+  margin-top: 5px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 12px;
+  background: #232f3e;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background: #ff9900;
+  color: black;
+}
+
+.success {
+  background: #e8f7e8;
+  border: 1px solid #4caf50;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.error {
+  background: #fde8e8;
+  border: 1px solid #e3342f;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.admin-link {
+  text-align: center;
+  margin-top: 20px;
+}
+
+a {
+  color: #232f3e;
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 25px;
+  font-size: 14px;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  word-break: break-word;
+}
+
+th {
+  background: #232f3e;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background: #f4f6f8;
+}
+
+.profile-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 50%;
+}

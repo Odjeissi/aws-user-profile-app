@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+  <head>
+    <title>AWS User Profile App</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>AWS User Profile App</h1>
+      <p>Submit your profile information below.</p>
+
+      {% if error %}
+      <div class="error">
+        <h2>Error</h2>
+        <p>{{ error }}</p>
+      </div>
+      {% endif %} {% if success %}
+      <div class="success">
+        <h2>Profile submitted successfully!</h2>
+        <p><strong>First Name:</strong> {{ first_name }}</p>
+        <p><strong>Last Name:</strong> {{ last_name }}</p>
+        <p><strong>Age:</strong> {{ age }}</p>
+        <p><strong>City:</strong> {{ city }}</p>
+        <p><strong>Country:</strong> {{ country }}</p>
+        <p><strong>Profile Picture:</strong> {{ profile_picture_name }}</p>
+      </div>
+      {% endif %}
+
+      <form method="POST" enctype="multipart/form-data">
+        <label>First Name</label>
+        <input type="text" name="first_name" required />
+
+        <label>Last Name</label>
+        <input type="text" name="last_name" required />
+
+        <label>Age</label>
+        <input type="number" name="age" required />
+
+        <label>City</label>
+        <input type="text" name="city" required />
+
+        <label>Country</label>
+        <input type="text" name="country" required />
+
+        <label>Profile Picture</label>
+        <input type="file" name="profile_picture" accept="image/*" />
+
+        <button type="submit">Submit Profile</button>
+      </form>
+
+      <p class="admin-link">
+        <a href="/admin">View Admin Dashboard</a>
+      </p>
+    </div>
+  </body>
+</html>
